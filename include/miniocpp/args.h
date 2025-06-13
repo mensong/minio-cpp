@@ -43,12 +43,19 @@ struct BaseArgs {
 struct BucketArgs : public BaseArgs {
   std::string bucket;
   std::string region;
+  http::ProgressFunction progressfunc = nullptr;
+  void* progress_userdata = nullptr;
 
   BucketArgs() = default;
   ~BucketArgs() = default;
 
   error::Error Validate() const;
 };  // struct BucketArgs
+
+struct GetReginArgs : public BucketArgs {
+  GetReginArgs() = default;
+  ~GetReginArgs() = default;
+};  // struct GetReginArgs
 
 struct ObjectArgs : public BucketArgs {
   std::string object;
@@ -156,8 +163,6 @@ struct PutObjectBaseArgs : public ObjectWriteArgs {
 struct PutObjectApiArgs : public PutObjectBaseArgs {
   std::string_view data;
   utils::Multimap query_params;
-  http::ProgressFunction progressfunc = nullptr;
-  void* progress_userdata = nullptr;
 
   PutObjectApiArgs() = default;
   ~PutObjectApiArgs() = default;
@@ -167,8 +172,6 @@ struct UploadPartArgs : public ObjectWriteArgs {
   std::string upload_id;
   unsigned int part_number;
   std::string_view data;
-  http::ProgressFunction progressfunc = nullptr;
-  void* progress_userdata = nullptr;
 
   UploadPartArgs() = default;
   ~UploadPartArgs() = default;
@@ -194,8 +197,6 @@ using RemoveObjectArgs = ObjectVersionArgs;
 struct DownloadObjectArgs : public ObjectReadArgs {
   std::string filename;
   bool overwrite;
-  http::ProgressFunction progressfunc = nullptr;
-  void* progress_userdata = nullptr;
 
   DownloadObjectArgs() = default;
   ~DownloadObjectArgs() = default;
@@ -206,8 +207,6 @@ struct DownloadObjectArgs : public ObjectReadArgs {
 struct GetObjectArgs : public ObjectConditionalReadArgs {
   http::DataFunction datafunc;
   void* userdata = nullptr;
-  http::ProgressFunction progressfunc = nullptr;
-  void* progress_userdata = nullptr;
 
   GetObjectArgs() = default;
   ~GetObjectArgs() = default;
@@ -314,8 +313,6 @@ struct ListObjectVersionsArgs : public ListObjectsCommonArgs {
 
 struct PutObjectArgs : public PutObjectBaseArgs {
   std::istream& stream;
-  http::ProgressFunction progressfunc = nullptr;
-  void* progress_userdata = nullptr;
 
   PutObjectArgs(std::istream& stream, long object_size, long part_size);
   ~PutObjectArgs() = default;
@@ -360,8 +357,6 @@ struct ComposeObjectArgs : public ObjectWriteArgs {
 
 struct UploadObjectArgs : public PutObjectBaseArgs {
   std::string filename;
-  http::ProgressFunction progressfunc = nullptr;
-  void* progress_userdata = nullptr;
 
   UploadObjectArgs() = default;
   ~UploadObjectArgs() = default;

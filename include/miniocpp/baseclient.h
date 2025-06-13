@@ -83,8 +83,7 @@ class BaseClient {
                             const std::string& object_name);
   Response execute(Request& req);
   Response Execute(Request& req);
-  GetRegionResponse GetRegion(const std::string& bucket_name,
-                              const std::string& region);
+  GetRegionResponse GetRegion(const GetReginArgs& args);
 
   AbortMultipartUploadResponse AbortMultipartUpload(
       AbortMultipartUploadArgs args);

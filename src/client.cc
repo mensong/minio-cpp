@@ -68,7 +68,12 @@ void ListObjectsResult::Populate() {
   }
 
   std::string region;
-  if (GetRegionResponse resp = client_->GetRegion(args_.bucket, args_.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args_.bucket;
+  gr_args.region = args_.region;
+  gr_args.progressfunc = args_.progressfunc;
+  gr_args.progress_userdata = args_.progress_userdata;
+  if (GetRegionResponse resp = client_->GetRegion(gr_args)) {
     region = resp.region;
     if (args_.recursive) {
       args_.delimiter = "";
@@ -464,6 +469,8 @@ PutObjectResponse Client::PutObject(PutObjectArgs args, std::string& upload_id,
       cmu_args.region = args.region;
       cmu_args.object = args.object;
       cmu_args.headers = headers;
+      cmu_args.progressfunc = args.progressfunc;
+      cmu_args.progress_userdata = args.progress_userdata;
       if (CreateMultipartUploadResponse resp =
               CreateMultipartUpload(cmu_args)) {
         upload_id = resp.upload_id;
@@ -531,6 +538,8 @@ PutObjectResponse Client::PutObject(PutObjectArgs args, std::string& upload_id,
   cmu_args.object = args.object;
   cmu_args.upload_id = upload_id;
   cmu_args.parts = parts;
+  cmu_args.progressfunc = args.progressfunc;
+  cmu_args.progress_userdata = args.progress_userdata;
   CompleteMultipartUploadResponse resp = CompleteMultipartUpload(cmu_args);
   if (resp && args.progressfunc != nullptr) {
     http::ProgressFunctionArgs actual_args;
@@ -648,7 +657,12 @@ CopyObjectResponse Client::CopyObject(CopyObjectArgs args) {
   headers.AddAll(args.source.CopyHeaders());
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return CopyObjectResponse(resp);
@@ -706,7 +720,12 @@ DownloadObjectResponse Client::DownloadObject(DownloadObjectArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DownloadObjectResponse(resp);

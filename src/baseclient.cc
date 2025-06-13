@@ -251,34 +251,35 @@ Response BaseClient::Execute(Request& req) {
   return resp;
 }
 
-GetRegionResponse BaseClient::GetRegion(const std::string& bucket_name,
-                                        const std::string& region) {
+GetRegionResponse BaseClient::GetRegion(const GetReginArgs& args) {
   std::string base_region = base_url_.region;
-  if (!region.empty()) {
-    if (!base_region.empty() && base_region != region) {
+  if (!args.region.empty()) {
+    if (!base_region.empty() && base_region != args.region) {
       return error::make<GetRegionResponse>("region must be " + base_region +
-                                            ", but passed " + region);
+                                            ", but passed " + args.region);
     }
 
-    return GetRegionResponse(region);
+    return GetRegionResponse(args.region);
   }
 
   if (!base_region.empty()) {
     return GetRegionResponse(base_region);
   }
 
-  if (bucket_name.empty() || provider_ == nullptr) {
+  if (args.bucket.empty() || provider_ == nullptr) {
     return GetRegionResponse("us-east-1");
   }
 
-  std::string stored_region = region_map_[bucket_name];
+  std::string stored_region = region_map_[args.bucket];
   if (!stored_region.empty()) {
     return GetRegionResponse(stored_region);
   }
   Request req(http::Method::kGet, "us-east-1", base_url_, utils::Multimap(),
               utils::Multimap());
   req.query_params.Add("location", "");
-  req.bucket_name = bucket_name;
+  req.bucket_name = args.bucket;
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (!resp) {
@@ -299,7 +300,7 @@ GetRegionResponse BaseClient::GetRegion(const std::string& bucket_name,
     if (!base_url_.aws_domain_suffix.empty()) value = "eu-west-1";
   }
 
-  region_map_[bucket_name] = value;
+  region_map_[args.bucket] = value;
 
   return GetRegionResponse(value);
 }
@@ -311,7 +312,12 @@ AbortMultipartUploadResponse BaseClient::AbortMultipartUpload(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return AbortMultipartUploadResponse(resp);
@@ -331,7 +337,12 @@ BucketExistsResponse BaseClient::BucketExists(BucketExistsArgs args) {
     return BucketExistsResponse(err);
   }
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return (resp.code == "NoSuchBucket") ? BucketExistsResponse(false)
@@ -356,7 +367,12 @@ CompleteMultipartUploadResponse BaseClient::CompleteMultipartUpload(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return CompleteMultipartUploadResponse(resp);
@@ -367,6 +383,8 @@ CompleteMultipartUploadResponse BaseClient::CompleteMultipartUpload(
   req.bucket_name = args.bucket;
   req.object_name = args.object;
   req.query_params.Add("uploadId", args.upload_id);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   std::stringstream ss;
   ss << "<CompleteMultipartUpload>";
@@ -402,7 +420,12 @@ CreateMultipartUploadResponse BaseClient::CreateMultipartUpload(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return CreateMultipartUploadResponse(resp);
@@ -414,6 +437,8 @@ CreateMultipartUploadResponse BaseClient::CreateMultipartUpload(
   req.object_name = args.object;
   req.query_params.Add("uploads", "");
   req.headers.AddAll(args.headers);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   if (Response resp = Execute(req)) {
     pugi::xml_document xdoc;
@@ -436,7 +461,12 @@ DeleteBucketEncryptionResponse BaseClient::DeleteBucketEncryption(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DeleteBucketEncryptionResponse(resp);
@@ -463,7 +493,12 @@ DisableObjectLegalHoldResponse BaseClient::DisableObjectLegalHold(
     return DisableObjectLegalHoldResponse(err);
   }
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DisableObjectLegalHoldResponse(resp);
@@ -492,7 +527,12 @@ DeleteBucketLifecycleResponse BaseClient::DeleteBucketLifecycle(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DeleteBucketLifecycleResponse(resp);
@@ -529,7 +569,12 @@ DeleteBucketPolicyResponse BaseClient::DeleteBucketPolicy(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DeleteBucketPolicyResponse(resp);
@@ -550,7 +595,12 @@ DeleteBucketReplicationResponse BaseClient::DeleteBucketReplication(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DeleteBucketReplicationResponse(resp);
@@ -578,7 +628,12 @@ DeleteBucketTagsResponse BaseClient::DeleteBucketTags(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DeleteBucketTagsResponse(resp);
@@ -599,7 +654,12 @@ DeleteObjectLockConfigResponse BaseClient::DeleteObjectLockConfig(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DeleteObjectLockConfigResponse(resp);
@@ -620,7 +680,12 @@ DeleteObjectTagsResponse BaseClient::DeleteObjectTags(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return DeleteObjectTagsResponse(resp);
@@ -645,7 +710,12 @@ EnableObjectLegalHoldResponse BaseClient::EnableObjectLegalHold(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return EnableObjectLegalHoldResponse(resp);
@@ -674,7 +744,12 @@ GetBucketEncryptionResponse BaseClient::GetBucketEncryption(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetBucketEncryptionResponse(resp);
@@ -699,7 +774,12 @@ GetBucketLifecycleResponse BaseClient::GetBucketLifecycle(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetBucketLifecycleResponse(resp);
@@ -729,7 +809,12 @@ GetBucketNotificationResponse BaseClient::GetBucketNotification(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetBucketNotificationResponse(resp);
@@ -753,7 +838,12 @@ GetBucketPolicyResponse BaseClient::GetBucketPolicy(GetBucketPolicyArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetBucketPolicyResponse(resp);
@@ -778,7 +868,12 @@ GetBucketReplicationResponse BaseClient::GetBucketReplication(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetBucketReplicationResponse(resp);
@@ -802,7 +897,12 @@ GetBucketTagsResponse BaseClient::GetBucketTags(GetBucketTagsArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetBucketTagsResponse(resp);
@@ -827,7 +927,12 @@ GetBucketVersioningResponse BaseClient::GetBucketVersioning(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetBucketVersioningResponse(resp);
@@ -877,7 +982,12 @@ GetObjectResponse BaseClient::GetObject(GetObjectArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetObjectResponse(resp);
@@ -906,7 +1016,12 @@ GetObjectLockConfigResponse BaseClient::GetObjectLockConfig(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetObjectLockConfigResponse(resp);
@@ -957,7 +1072,12 @@ GetObjectRetentionResponse BaseClient::GetObjectRetention(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetObjectRetentionResponse(resp);
@@ -1004,7 +1124,12 @@ GetObjectTagsResponse BaseClient::GetObjectTags(GetObjectTagsArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetObjectTagsResponse(resp);
@@ -1033,7 +1158,12 @@ GetPresignedObjectUrlResponse BaseClient::GetPresignedObjectUrl(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetPresignedObjectUrlResponse(resp);
@@ -1083,7 +1213,10 @@ GetPresignedPostFormDataResponse BaseClient::GetPresignedPostFormData(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(policy.bucket, policy.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = policy.bucket;
+  gr_args.region = policy.region;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return GetPresignedPostFormDataResponse(resp);
@@ -1106,7 +1239,12 @@ IsObjectLegalHoldEnabledResponse BaseClient::IsObjectLegalHoldEnabled(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return IsObjectLegalHoldEnabledResponse(resp);
@@ -1165,7 +1303,12 @@ ListenBucketNotificationResponse BaseClient::ListenBucketNotification(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return ListenBucketNotificationResponse(resp);
@@ -1223,7 +1366,12 @@ ListObjectsResponse BaseClient::ListObjectsV1(ListObjectsV1Args args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return ListObjectsResponse(resp);
@@ -1250,7 +1398,12 @@ ListObjectsResponse BaseClient::ListObjectsV2(ListObjectsV2Args args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return ListObjectsResponse(resp);
@@ -1288,7 +1441,12 @@ ListObjectsResponse BaseClient::ListObjectVersions(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return ListObjectsResponse(resp);
@@ -1361,7 +1519,12 @@ PutObjectResponse BaseClient::PutObject(PutObjectApiArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return PutObjectResponse(resp);
@@ -1398,7 +1561,12 @@ RemoveBucketResponse BaseClient::RemoveBucket(RemoveBucketArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return RemoveBucketResponse(resp);
@@ -1417,7 +1585,12 @@ RemoveObjectResponse BaseClient::RemoveObject(RemoveObjectArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return RemoveObjectResponse(resp);
@@ -1440,7 +1613,12 @@ RemoveObjectsResponse BaseClient::RemoveObjects(RemoveObjectsApiArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return RemoveObjectsResponse(resp);
@@ -1490,7 +1668,12 @@ SelectObjectContentResponse BaseClient::SelectObjectContent(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SelectObjectContentResponse(resp);
@@ -1520,7 +1703,12 @@ SetBucketEncryptionResponse BaseClient::SetBucketEncryption(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetBucketEncryptionResponse(resp);
@@ -1555,7 +1743,12 @@ SetBucketLifecycleResponse BaseClient::SetBucketLifecycle(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetBucketLifecycleResponse(resp);
@@ -1580,7 +1773,12 @@ SetBucketNotificationResponse BaseClient::SetBucketNotification(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetBucketNotificationResponse(resp);
@@ -1604,7 +1802,12 @@ SetBucketPolicyResponse BaseClient::SetBucketPolicy(SetBucketPolicyArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetBucketPolicyResponse(resp);
@@ -1627,7 +1830,12 @@ SetBucketReplicationResponse BaseClient::SetBucketReplication(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetBucketReplicationResponse(resp);
@@ -1651,7 +1859,12 @@ SetBucketTagsResponse BaseClient::SetBucketTags(SetBucketTagsArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetBucketTagsResponse(resp);
@@ -1688,7 +1901,12 @@ SetBucketVersioningResponse BaseClient::SetBucketVersioning(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetBucketVersioningResponse(resp);
@@ -1724,7 +1942,12 @@ SetObjectLockConfigResponse BaseClient::SetObjectLockConfig(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetObjectLockConfigResponse(resp);
@@ -1770,7 +1993,12 @@ SetObjectRetentionResponse BaseClient::SetObjectRetention(
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetObjectRetentionResponse(resp);
@@ -1804,7 +2032,12 @@ SetObjectTagsResponse BaseClient::SetObjectTags(SetObjectTagsArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return SetObjectTagsResponse(resp);
@@ -1849,7 +2082,12 @@ StatObjectResponse BaseClient::StatObject(StatObjectArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return StatObjectResponse(resp);
@@ -1941,7 +2179,12 @@ UploadPartCopyResponse BaseClient::UploadPartCopy(UploadPartCopyArgs args) {
   }
 
   std::string region;
-  if (GetRegionResponse resp = GetRegion(args.bucket, args.region)) {
+  GetReginArgs gr_args;
+  gr_args.bucket = args.bucket;
+  gr_args.region = args.region;
+  gr_args.progressfunc = args.progressfunc;
+  gr_args.progress_userdata = args.progress_userdata;
+  if (GetRegionResponse resp = GetRegion(gr_args)) {
     region = resp.region;
   } else {
     return UploadPartCopyResponse(resp);
