@@ -66,7 +66,7 @@ const char* MethodToString(Method method) noexcept {
     default: {
       std::cerr << "ABORT: Unimplemented HTTP method. This should not happen."
                 << std::endl;
-      std::terminate();
+      //std::terminate();
     }
   }
   return nullptr;
@@ -439,10 +439,24 @@ Response Request::execute() {
 
     requests.fdset(&fdread, &fdwrite, &fdexcep, &maxfd);
 
-    if (select(maxfd + 1, &fdread, &fdwrite, &fdexcep, nullptr) < 0) {
+    struct timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
+    int res = select(maxfd + 1, &fdread, &fdwrite, &fdexcep, &timeout);
+    if (res < 0) {  // error
       std::cerr << "select() failed; this should not happen" << std::endl;
-      std::terminate();
+      // std::terminate();
+      return response;
+    } else if (res == 0) {  // timeout
+      if (progressfunc != nullptr) {
+        ProgressFunctionArgs args;
+        args.userdata = progress_userdata;
+        progressfunc(args);
+      }
+    } else {  // > 0 is ok
+      // break;
     }
+
     while (!requests.perform(&left)) {
     }
   }
