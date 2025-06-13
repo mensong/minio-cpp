@@ -35,6 +35,8 @@ namespace minio::s3 {
 struct BaseArgs {
   utils::Multimap extra_headers;
   utils::Multimap extra_query_params;
+  http::ProgressFunction progressfunc = nullptr;
+  void* progress_userdata = nullptr;
 
   BaseArgs() = default;
   ~BaseArgs() = default;
@@ -43,8 +45,6 @@ struct BaseArgs {
 struct BucketArgs : public BaseArgs {
   std::string bucket;
   std::string region;
-  http::ProgressFunction progressfunc = nullptr;
-  void* progress_userdata = nullptr;
 
   BucketArgs() = default;
   ~BucketArgs() = default;

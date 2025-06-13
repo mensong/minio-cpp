@@ -328,6 +328,8 @@ AbortMultipartUploadResponse BaseClient::AbortMultipartUpload(
   req.bucket_name = args.bucket;
   req.object_name = args.object;
   req.query_params.Add("uploadId", args.upload_id);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return AbortMultipartUploadResponse(Execute(req));
 }
@@ -352,6 +354,8 @@ BucketExistsResponse BaseClient::BucketExists(BucketExistsArgs args) {
   Request req(http::Method::kHead, region, base_url_, args.extra_headers,
               args.extra_query_params);
   req.bucket_name = args.bucket;
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
   if (Response resp = Execute(req)) {
     return BucketExistsResponse(true);
   } else {
@@ -476,6 +480,8 @@ DeleteBucketEncryptionResponse BaseClient::DeleteBucketEncryption(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("encryption", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (resp) {
@@ -516,6 +522,8 @@ DisableObjectLegalHoldResponse BaseClient::DisableObjectLegalHold(
   req.query_params.Add("legal-hold", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return DisableObjectLegalHoldResponse(Execute(req));
 }
@@ -542,6 +550,8 @@ DeleteBucketLifecycleResponse BaseClient::DeleteBucketLifecycle(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("lifecycle", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return DeleteBucketLifecycleResponse(Execute(req));
 }
@@ -558,6 +568,8 @@ DeleteBucketNotificationResponse BaseClient::DeleteBucketNotification(
   sbnargs.extra_query_params = args.extra_query_params;
   sbnargs.bucket = args.bucket;
   sbnargs.region = args.region;
+  sbnargs.progressfunc = args.progressfunc;
+  sbnargs.progress_userdata = args.progress_userdata;
 
   return DeleteBucketNotificationResponse(SetBucketNotification(sbnargs));
 }
@@ -584,6 +596,8 @@ DeleteBucketPolicyResponse BaseClient::DeleteBucketPolicy(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("policy", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return DeleteBucketPolicyResponse(Execute(req));
 }
@@ -610,6 +624,8 @@ DeleteBucketReplicationResponse BaseClient::DeleteBucketReplication(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("replication", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (resp) {
@@ -643,6 +659,8 @@ DeleteBucketTagsResponse BaseClient::DeleteBucketTags(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("tagging", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return DeleteBucketTagsResponse(Execute(req));
 }
@@ -669,6 +687,8 @@ DeleteObjectLockConfigResponse BaseClient::DeleteObjectLockConfig(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("object-lock", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return DeleteObjectLockConfigResponse(Execute(req));
 }
@@ -699,6 +719,8 @@ DeleteObjectTagsResponse BaseClient::DeleteObjectTags(
     req.query_params.Add("versionId", args.version_id);
   }
   req.query_params.Add("tagging", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return DeleteObjectTagsResponse(Execute(req));
 }
@@ -733,6 +755,8 @@ EnableObjectLegalHoldResponse BaseClient::EnableObjectLegalHold(
   req.query_params.Add("legal-hold", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return EnableObjectLegalHoldResponse(Execute(req));
 }
@@ -759,6 +783,8 @@ GetBucketEncryptionResponse BaseClient::GetBucketEncryption(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("encryption", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (resp) {
@@ -789,6 +815,8 @@ GetBucketLifecycleResponse BaseClient::GetBucketLifecycle(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("lifecycle", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
 
@@ -824,6 +852,8 @@ GetBucketNotificationResponse BaseClient::GetBucketNotification(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("notification", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (resp) {
@@ -853,6 +883,8 @@ GetBucketPolicyResponse BaseClient::GetBucketPolicy(GetBucketPolicyArgs args) {
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("policy", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (resp) {
@@ -883,6 +915,8 @@ GetBucketReplicationResponse BaseClient::GetBucketReplication(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("replication", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (resp) {
@@ -912,6 +946,8 @@ GetBucketTagsResponse BaseClient::GetBucketTags(GetBucketTagsArgs args) {
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("tagging", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (resp) {
@@ -942,6 +978,8 @@ GetBucketVersioningResponse BaseClient::GetBucketVersioning(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("versioning", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (!resp) {
@@ -1005,6 +1043,8 @@ GetObjectResponse BaseClient::GetObject(GetObjectArgs args) {
   req.progressfunc = args.progressfunc;
   req.progress_userdata = args.progress_userdata;
   req.headers.AddAll(args.Headers());
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return GetObjectResponse(Execute(req));
 }
@@ -1031,6 +1071,8 @@ GetObjectLockConfigResponse BaseClient::GetObjectLockConfig(
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.query_params.Add("object-lock", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (!resp) {
@@ -1091,6 +1133,8 @@ GetObjectRetentionResponse BaseClient::GetObjectRetention(
     req.query_params.Add("versionId", args.version_id);
   }
   req.query_params.Add("retention", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   GetObjectRetentionResponse response;
 
@@ -1143,6 +1187,8 @@ GetObjectTagsResponse BaseClient::GetObjectTags(GetObjectTagsArgs args) {
     req.query_params.Add("versionId", args.version_id);
   }
   req.query_params.Add("tagging", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (resp) {
@@ -1178,7 +1224,7 @@ GetPresignedObjectUrlResponse BaseClient::GetPresignedObjectUrl(
           url, args.method, region, query_params, args.bucket, args.object)) {
     std::cerr << "failed to build url. error=" << err
               << ". This should not happen" << std::endl;
-    std::terminate();
+    //std::terminate();
   }
 
   if (provider_ != nullptr) {
@@ -1258,6 +1304,8 @@ IsObjectLegalHoldEnabledResponse BaseClient::IsObjectLegalHoldEnabled(
     req.query_params.Add("versionId", args.version_id);
   }
   req.query_params.Add("legal-hold", "");
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (!resp) {
@@ -1280,6 +1328,9 @@ IsObjectLegalHoldEnabledResponse BaseClient::IsObjectLegalHoldEnabled(
 ListBucketsResponse BaseClient::ListBuckets(ListBucketsArgs args) {
   Request req(http::Method::kGet, base_url_.region, base_url_,
               args.extra_headers, args.extra_query_params);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
+
   Response resp = Execute(req);
   if (!resp) {
     return ListBucketsResponse(resp);
@@ -1356,6 +1407,8 @@ ListenBucketNotificationResponse BaseClient::ListenBucketNotification(
       }
     }
   };
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return ListenBucketNotificationResponse(Execute(req));
 }
@@ -1385,6 +1438,9 @@ ListObjectsResponse BaseClient::ListObjectsV1(ListObjectsV1Args args) {
   if (!args.marker.empty()) {
     req.query_params.Add("marker", args.marker);
   }
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
+
   Response resp = Execute(req);
   if (!resp) {
     return ListObjectsResponse(resp);
@@ -1427,6 +1483,9 @@ ListObjectsResponse BaseClient::ListObjectsV2(ListObjectsV2Args args) {
   if (args.include_user_metadata) {
     req.query_params.Add("metadata", "true");
   }
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
+
   Response resp = Execute(req);
   if (!resp) {
     return ListObjectsResponse(resp);
@@ -1464,6 +1523,8 @@ ListObjectsResponse BaseClient::ListObjectVersions(
   if (!args.version_id_marker.empty()) {
     req.query_params.Add("version-id-marker", args.version_id_marker);
   }
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response resp = Execute(req);
   if (!resp) {
@@ -1493,6 +1554,8 @@ MakeBucketResponse BaseClient::MakeBucket(MakeBucketArgs args) {
   Request req(http::Method::kPut, region, base_url_, args.extra_headers,
               args.extra_query_params);
   req.bucket_name = args.bucket;
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
   if (args.object_lock) {
     req.headers.Add("x-amz-bucket-object-lock-enabled", "true");
   }
@@ -1574,6 +1637,8 @@ RemoveBucketResponse BaseClient::RemoveBucket(RemoveBucketArgs args) {
 
   Request req(http::Method::kDelete, region, base_url_, args.extra_headers,
               args.extra_query_params);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
   req.bucket_name = args.bucket;
 
   return RemoveBucketResponse(Execute(req));
@@ -1603,6 +1668,8 @@ RemoveObjectResponse BaseClient::RemoveObject(RemoveObjectArgs args) {
   if (!args.version_id.empty()) {
     req.query_params.Add("versionId", args.version_id);
   }
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return RemoveObjectResponse(Execute(req));
 }
@@ -1648,6 +1715,8 @@ RemoveObjectsResponse BaseClient::RemoveObjects(RemoveObjectsApiArgs args) {
   req.body = body;
   req.headers.Add("Content-Type", "application/xml");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response response = Execute(req);
   if (!response) {
@@ -1692,6 +1761,8 @@ SelectObjectContentResponse BaseClient::SelectObjectContent(
   SelectHandler handler(args.resultfunc);
   using namespace std::placeholders;
   req.datafunc = std::bind(&SelectHandler::DataFunction, &handler, _1);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SelectObjectContentResponse(Execute(req));
 }
@@ -1732,6 +1803,8 @@ SetBucketEncryptionResponse BaseClient::SetBucketEncryption(
   req.query_params.Add("encryption", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetBucketEncryptionResponse(Execute(req));
 }
@@ -1762,6 +1835,8 @@ SetBucketLifecycleResponse BaseClient::SetBucketLifecycle(
   req.query_params.Add("lifecycle", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetBucketLifecycleResponse(Execute(req));
 }
@@ -1792,6 +1867,8 @@ SetBucketNotificationResponse BaseClient::SetBucketNotification(
   req.query_params.Add("notification", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetBucketNotificationResponse(Execute(req));
 }
@@ -1819,6 +1896,8 @@ SetBucketPolicyResponse BaseClient::SetBucketPolicy(SetBucketPolicyArgs args) {
   req.query_params.Add("policy", "");
   req.body = args.policy;
   req.headers.Add("Content-MD5", utils::Md5sumHash(args.policy));
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetBucketPolicyResponse(Execute(req));
 }
@@ -1849,6 +1928,8 @@ SetBucketReplicationResponse BaseClient::SetBucketReplication(
   req.query_params.Add("replication", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetBucketReplicationResponse(Execute(req));
 }
@@ -1890,6 +1971,8 @@ SetBucketTagsResponse BaseClient::SetBucketTags(SetBucketTagsArgs args) {
   req.query_params.Add("tagging", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetBucketTagsResponse(Execute(req));
 }
@@ -1931,6 +2014,8 @@ SetBucketVersioningResponse BaseClient::SetBucketVersioning(
   req.query_params.Add("versioning", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetBucketVersioningResponse(Execute(req));
 }
@@ -1982,6 +2067,8 @@ SetObjectLockConfigResponse BaseClient::SetObjectLockConfig(
   req.query_params.Add("object-lock", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetObjectLockConfigResponse(Execute(req));
 }
@@ -2022,6 +2109,8 @@ SetObjectRetentionResponse BaseClient::SetObjectRetention(
   req.query_params.Add("retention", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetObjectRetentionResponse(Execute(req));
 }
@@ -2067,6 +2156,8 @@ SetObjectTagsResponse BaseClient::SetObjectTags(SetObjectTagsArgs args) {
   req.query_params.Add("tagging", "");
   req.headers.Add("Content-MD5", utils::Md5sumHash(body));
   req.body = std::move(body);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   return SetObjectTagsResponse(Execute(req));
 }
@@ -2097,6 +2188,8 @@ StatObjectResponse BaseClient::StatObject(StatObjectArgs args) {
               args.extra_query_params);
   req.bucket_name = args.bucket;
   req.object_name = args.object;
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
   if (!args.version_id.empty()) {
     req.query_params.Add("versionId", args.version_id);
   }
@@ -2169,6 +2262,8 @@ UploadPartResponse BaseClient::UploadPart(UploadPartArgs args) {
   api_args.progressfunc = args.progressfunc;
   api_args.progress_userdata = args.progress_userdata;
   api_args.query_params = query_params;
+  api_args.progressfunc = args.progressfunc;
+  api_args.progress_userdata = args.progress_userdata;
 
   return UploadPartResponse(PutObject(api_args));
 }
@@ -2198,6 +2293,8 @@ UploadPartCopyResponse BaseClient::UploadPartCopy(UploadPartCopyArgs args) {
   req.query_params.Add("partNumber", std::to_string(args.part_number));
   req.query_params.Add("uploadId", args.upload_id);
   req.headers.AddAll(args.headers);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response response = Execute(req);
   if (!response) {

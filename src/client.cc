@@ -128,6 +128,8 @@ void RemoveObjectsResult::Populate() {
     args.region = args_.region;
     args.quiet = true;
     args.bypass_governance_mode = args_.bypass_governance_mode;
+    args.progressfunc = args_.progressfunc;
+    args.progress_userdata = args_.progress_userdata;
 
     for (int i = 0; i < 1000; i++) {
       DeleteObject object;
@@ -259,6 +261,8 @@ ComposeObjectResponse Client::ComposeObject(ComposeObjectArgs args,
     coargs.object = args.object;
     coargs.sse = args.sse;
     coargs.source = source;
+    coargs.progressfunc = args.progressfunc;
+    coargs.progress_userdata = args.progress_userdata;
 
     return ComposeObjectResponse(CopyObject(coargs));
   }
@@ -272,6 +276,8 @@ ComposeObjectResponse Client::ComposeObject(ComposeObjectArgs args,
     cmu_args.region = args.region;
     cmu_args.object = args.object;
     cmu_args.headers = headers;
+    cmu_args.progressfunc = args.progressfunc;
+    cmu_args.progress_userdata = args.progress_userdata;
     if (CreateMultipartUploadResponse resp = CreateMultipartUpload(cmu_args)) {
       upload_id = resp.upload_id;
     } else {
@@ -322,6 +328,8 @@ ComposeObjectResponse Client::ComposeObject(ComposeObjectArgs args,
       upc_args.headers = headers;
       upc_args.upload_id = upload_id;
       upc_args.part_number = part_number;
+      upc_args.progressfunc = args.progressfunc;
+      upc_args.progress_userdata = args.progress_userdata;
       UploadPartCopyResponse resp = UploadPartCopy(upc_args);
       if (!resp) {
         return ComposeObjectResponse(resp);
@@ -348,6 +356,8 @@ ComposeObjectResponse Client::ComposeObject(ComposeObjectArgs args,
         upc_args.headers = headerscopy;
         upc_args.upload_id = upload_id;
         upc_args.part_number = part_number;
+        upc_args.progressfunc = args.progressfunc;
+        upc_args.progress_userdata = args.progress_userdata;
         {
           UploadPartCopyResponse resp = UploadPartCopy(upc_args);
           if (!resp) {
@@ -367,6 +377,8 @@ ComposeObjectResponse Client::ComposeObject(ComposeObjectArgs args,
   cmu_args.object = args.object;
   cmu_args.upload_id = upload_id;
   cmu_args.parts = parts;
+  cmu_args.progressfunc = args.progressfunc;
+  cmu_args.progress_userdata = args.progress_userdata;
   return ComposeObjectResponse(CompleteMultipartUpload(cmu_args));
 }
 
@@ -458,6 +470,8 @@ PutObjectResponse Client::PutObject(PutObjectArgs args, std::string& upload_id,
       api_args.progressfunc = args.progressfunc;
       api_args.progress_userdata = args.progress_userdata;
       api_args.headers = headers;
+      api_args.progressfunc = args.progressfunc;
+      api_args.progress_userdata = args.progress_userdata;
 
       return BaseClient::PutObject(api_args);
     }
@@ -569,6 +583,8 @@ ComposeObjectResponse Client::ComposeObject(ComposeObjectArgs args) {
     amu_args.region = args.region;
     amu_args.object = args.object;
     amu_args.upload_id = upload_id;
+    amu_args.progressfunc = args.progressfunc;
+    amu_args.progress_userdata = args.progress_userdata;
     AbortMultipartUpload(amu_args);
   }
 
@@ -630,6 +646,8 @@ CopyObjectResponse Client::CopyObject(CopyObjectArgs args) {
     src.not_match_etag = args.source.not_match_etag;
     src.modified_since = args.source.modified_since;
     src.unmodified_since = args.source.unmodified_since;
+    src.progressfunc = args.source.progressfunc;
+    src.progress_userdata = args.source.progress_userdata;
 
     ComposeObjectArgs coargs;
     coargs.extra_headers = args.extra_headers;
@@ -673,6 +691,8 @@ CopyObjectResponse Client::CopyObject(CopyObjectArgs args) {
   req.bucket_name = args.bucket;
   req.object_name = args.object;
   req.headers.AddAll(headers);
+  req.progressfunc = args.progressfunc;
+  req.progress_userdata = args.progress_userdata;
 
   Response response = Execute(req);
   if (!response) {
@@ -704,6 +724,8 @@ DownloadObjectResponse Client::DownloadObject(DownloadObjectArgs args) {
     soargs.object = args.object;
     soargs.version_id = args.version_id;
     soargs.ssec = args.ssec;
+    soargs.progressfunc = args.progressfunc;
+    soargs.progress_userdata = args.progress_userdata;
     StatObjectResponse resp = StatObject(soargs);
     if (!resp) {
       return DownloadObjectResponse(resp);
@@ -782,6 +804,8 @@ PutObjectResponse Client::PutObject(PutObjectArgs args) {
     amu_args.region = std::move(args.region);
     amu_args.object = std::move(args.object);
     amu_args.upload_id = upload_id;
+    amu_args.progressfunc = args.progressfunc;
+    amu_args.progress_userdata = args.progress_userdata;
     AbortMultipartUpload(amu_args);
   }
 

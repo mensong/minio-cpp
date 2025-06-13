@@ -247,6 +247,8 @@ ListObjectsV1Args::ListObjectsV1Args(ListObjectsArgs args) {
   this->max_keys = args.max_keys;
   this->prefix = args.prefix;
   this->marker = args.marker;
+  this->progressfunc = args.progressfunc;
+  this->progress_userdata = args.progress_userdata;
 }
 
 ListObjectsV1Args& ListObjectsV1Args::operator=(ListObjectsArgs args) {
@@ -268,6 +270,8 @@ ListObjectsV2Args::ListObjectsV2Args(ListObjectsArgs args) {
   this->continuation_token = args.continuation_token;
   this->fetch_owner = args.fetch_owner;
   this->include_user_metadata = args.include_user_metadata;
+  this->progressfunc = args.progressfunc;
+  this->progress_userdata = args.progress_userdata;
 }
 
 ListObjectsV2Args& ListObjectsV2Args::operator=(ListObjectsArgs args) {
@@ -287,6 +291,8 @@ ListObjectVersionsArgs::ListObjectVersionsArgs(ListObjectsArgs args) {
   this->prefix = args.prefix;
   this->key_marker = args.key_marker;
   this->version_id_marker = args.version_id_marker;
+  this->progressfunc = args.progressfunc;
+  this->progress_userdata = args.progress_userdata;
 }
 
 ListObjectVersionsArgs& ListObjectVersionsArgs::operator=(
