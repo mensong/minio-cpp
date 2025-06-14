@@ -245,6 +245,11 @@ ComposeObjectResponse Client::ComposeObject(ComposeObjectArgs args,
                                             std::string& upload_id) {
   size_t part_count = 0;
   {
+    for (auto& source : args.sources) {
+      source.progressfunc = args.progressfunc;
+      source.progress_userdata = args.progress_userdata;
+    }
+
     StatObjectResponse resp = CalculatePartCount(part_count, args.sources);
     if (!resp) {
       return ComposeObjectResponse(resp);
@@ -472,7 +477,6 @@ PutObjectResponse Client::PutObject(PutObjectArgs args, std::string& upload_id,
       api_args.headers = headers;
       api_args.progressfunc = args.progressfunc;
       api_args.progress_userdata = args.progress_userdata;
-
       return BaseClient::PutObject(api_args);
     }
 
@@ -608,7 +612,10 @@ CopyObjectResponse Client::CopyObject(CopyObjectArgs args) {
 
   std::string etag;
   size_t size;
-  {
+  { 
+    args.source.progressfunc = args.progressfunc;
+    args.source.progress_userdata = args.progress_userdata;
+    
     StatObjectResponse resp = StatObject(args.source);
     if (!resp) {
       return CopyObjectResponse(resp);
@@ -657,6 +664,8 @@ CopyObjectResponse Client::CopyObject(CopyObjectArgs args) {
     coargs.object = args.object;
     coargs.sse = args.sse;
     coargs.sources.push_back(src);
+    coargs.progressfunc = args.progressfunc;
+    coargs.progress_userdata = args.progress_userdata;
 
     return CopyObjectResponse(ComposeObject(coargs));
   }
@@ -672,6 +681,8 @@ CopyObjectResponse Client::CopyObject(CopyObjectArgs args) {
     headers.Add("x-amz-tagging-directive",
                 DirectiveToString(*args.tagging_directive));
   }
+  args.source.progressfunc = args.progressfunc;
+  args.source.progress_userdata = args.progress_userdata;
   headers.AddAll(args.source.CopyHeaders());
 
   std::string region;
